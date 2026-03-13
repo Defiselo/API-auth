@@ -1,0 +1,109 @@
+﻿:root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --accent: #10b981;
+    --text: #f8fafc;
+    --border: #334155;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.wrapper {
+    width: 100%;
+    max-width: 480px;
+}
+
+.stats-panel {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+}
+
+.stats-panel h3 {
+    font-size: 0.9rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 15px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #2d3748;
+}
+
+form {
+    background: var(--card);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+#names {
+    width: 100%;
+    background: var(--bg);
+    color: white;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+#drinks li {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.counter-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#drinks button {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#drinks button:hover {
+    background: var(--accent);
+    color: white;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    border: none;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+}
