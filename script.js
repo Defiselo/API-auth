@@ -51,6 +51,23 @@
     return arr
 }
 
+    addEventListener('online', async () =>{
+        if(localStorage.getItem("savedPayload") !== undefined){
+            await fetch("https://crm.skch.cz/ajax0/procedure2.php?cmd=saveDrinks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json",
+                    'Authorization': AUTH_HEADER
+                },
+                credentials: "include",
+                body: JSON.stringify(payload)
+            })
+
+            Object.keys(values).forEach(d => values[d] = 0)
+            document.querySelectorAll(".val-display").forEach(s => s.textContent = "0")
+
+            refreshStats()
+        }
+    })
 
     const getSummaryOfDrinks = async () => {
     const res = await fetch("https://crm.skch.cz/ajax0/procedure2.php?cmd=getSummaryOfDrinks", {
@@ -150,7 +167,7 @@
 
     refreshStats()
 } catch (err) {
-    console.error("Save failed:", err)
+    localStorage.setItem("savedPayload", payload);
 }
 })
 })
