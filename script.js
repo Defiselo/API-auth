@@ -1,173 +1,168 @@
- 
-
-    function make_base_auth(user, password) {
+function make_base_auth(user, password) {
     return "Basic " + btoa(user + ":" + password);
 }
 
-    const username = "coffe";
-    const password = "kafe";
-    const AUTH_HEADER = make_base_auth(username, password);
-    async function getTypesList(apiUrl) {
-    const res = await fetch(`${apiUrl}?cmd=getTypesList`, {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-    'Authorization': AUTH_HEADER
-}
-});
-    if (!res.ok) throw new Error(`getTypesList HTTP ${res.status}`);
-    return await res.json();
-}
+const username = "coffe";
+const password = "kafe";
+const AUTH_HEADER = make_base_auth(username, password);
 
-    const getNames = async () => {
-    const obj = {}
+
+
+const getNames = async () => {
+    const obj = {};
     const res = await fetch("https://crm.skch.cz/ajax0/procedure2.php?cmd=getPeopleList", {
-    method: 'GET',
-    credentials:"include",
-    headers:{
-    'Authorization': AUTH_HEADER
-}
-})
-    const data = await res.json()
+        method: 'GET',
+        credentials: "include",
+        headers: { 'Authorization': AUTH_HEADER }
+    });
+    const data = await res.json();
     for (let key of Object.keys(data)) {
-    obj[data[key]["ID"]] = data[key]["name"]
-}
-    return obj
-}
+        obj[data[key]["ID"]] = data[key]["name"];
+    }
+    return obj;
+};
 
-    const getDrinks = async () => {
-    const arr = []
-    const res = await fetch("https://crm.skch.cz/ajax0/procedure2.php?cmd=getTypesList",{
-    method: 'GET',
-    credentials: 'include',
-    header:{
-    'Authorization': AUTH_HEADER
-}
-})
-    const data = await res.json()
+const getDrinks = async () => {
+    const arr = [];
+    const res = await fetch("https://crm.skch.cz/ajax0/procedure2.php?cmd=getTypesList", {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Authorization': AUTH_HEADER }   // FIXED
+    });
+    const data = await res.json();
     for (let key of Object.keys(data)) {
-    arr.push(data[key]["typ"])
-}
-    return arr
-}
+        arr.push(data[key]["typ"]);
+    }
+    return arr;
+};
 
-    addEventListener('online', async () =>{
-        if(localStorage.getItem("savedPayload") !== undefined){
+const getSummaryOfDrinks = async () => {
+    const res = await fetch("https://crm.skch.cz/ajax0/procedure2.php?cmd=getSummaryOfDrinks", {
+        method: 'GET',
+        credentials: "include",
+        headers: { 'Authorization': AUTH_HEADER }
+    });
+    return await res.json();
+};
+
+const values = {};
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const select = document.querySelector("#names");
+    const form = document.querySelector("form");
+    const statsContainer = document.querySelector("#global-stats");
+
+    const refreshStats = async () => {
+        const data = await getSummaryOfDrinks();
+        statsContainer.innerHTML = "";
+        data.forEach(item => {
+            const row = document.createElement("div");
+            row.className = "stat-item";
+            row.innerHTML = `<span>${item[0]}</span> <strong>${item[1]}</strong>`;
+            statsContainer.appendChild(row);
+        });
+    };
+
+
+    addEventListener('online', async () => {
+        const saved = localStorage.getItem("savedPayload");
+        if (saved !== null) {
+            const payload = JSON.parse(saved);
+
             await fetch("https://crm.skch.cz/ajax0/procedure2.php?cmd=saveDrinks", {
                 method: "POST",
-                headers: { "Content-Type": "application/json",
+                headers: {
+                    "Content-Type": "application/json",
                     'Authorization': AUTH_HEADER
                 },
                 credentials: "include",
                 body: JSON.stringify(payload)
-            })
+            });
 
-            Object.keys(values).forEach(d => values[d] = 0)
-            document.querySelectorAll(".val-display").forEach(s => s.textContent = "0")
+            localStorage.removeItem("savedPayload");
 
-            refreshStats()
+            Object.keys(values).forEach(d => values[d] = 0);
+            document.querySelectorAll(".val-display").forEach(s => s.textContent = "0");
+
+            await refreshStats();
         }
-    })
+    });
 
-    const getSummaryOfDrinks = async () => {
-    const res = await fetch("https://crm.skch.cz/ajax0/procedure2.php?cmd=getSummaryOfDrinks", {
-    method: 'GET',
-    credentials:"include",
-    headers:{
-    'Authorization': AUTH_HEADER
-}
-})
-    return await res.json()
-}
-
-    const values = {}
-
-    document.addEventListener("DOMContentLoaded", () => {
-    const select = document.querySelector("#names")
-    const form = document.querySelector("form")
-    const statsContainer = document.querySelector("#global-stats")
-
-
-    const refreshStats = async () => {
-    const data = await getSummaryOfDrinks()
-    statsContainer.innerHTML = ""
-    data.forEach(item => {
-    const row = document.createElement("div")
-    row.className = "stat-item"
-    row.innerHTML = `<span>${item[0]}</span> <strong>${item[1]}</strong>`
-    statsContainer.appendChild(row)
-})
-}
-
-
-    refreshStats()
+    await refreshStats();
 
     getNames().then(o => {
-    for (let key of Object.keys(o)) {
-    const option = document.createElement("option")
-    option.value = key
-    option.textContent = o[key]
-    select.appendChild(option)
-}
-})
+        for (let key of Object.keys(o)) {
+            const option = document.createElement("option");
+            option.value = key;
+            option.textContent = o[key];
+            select.appendChild(option);
+        }
+    });
+
 
     getDrinks().then(arr => {
-    const ul = document.querySelector("#drinks")
-    arr.forEach(drink => {
-    values[drink] = 0
-    const li = document.createElement("li")
-    li.innerHTML = `
+        const ul = document.querySelector("#drinks");
+        arr.forEach(drink => {
+            values[drink] = 0;
+
+            const li = document.createElement("li");
+            li.innerHTML = `
                 <span>${drink}</span>
                 <div class="counter-group">
                     <button type="button" class="minus-btn">-</button>
                     <span class="val-display">0</span>
                     <button type="button" class="plus-btn">+</button>
                 </div>
-            `
-    const mBtn = li.querySelector(".minus-btn")
-    const pBtn = li.querySelector(".plus-btn")
-    const disp = li.querySelector(".val-display")
+            `;
 
-    pBtn.onclick = () => {
-    values[drink]++
-    disp.textContent = values[drink]
-}
-    mBtn.onclick = () => {
-    if (values[drink] > 0) {
-    values[drink]--
-    disp.textContent = values[drink]
-}
-}
-    ul.appendChild(li)
-})
-})
+            const mBtn = li.querySelector(".minus-btn");
+            const pBtn = li.querySelector(".plus-btn");
+            const disp = li.querySelector(".val-display");
+
+            pBtn.onclick = () => {
+                values[drink]++;
+                disp.textContent = values[drink];
+            };
+
+            mBtn.onclick = () => {
+                if (values[drink] > 0) {
+                    values[drink]--;
+                    disp.textContent = values[drink];
+                }
+            };
+
+            ul.appendChild(li);
+        });
+    });
 
     form.addEventListener("submit", async (e) => {
-    e.preventDefault()
-    const payload = {
-    user: select.value,
-    drinks: Object.keys(values).map(drink => ({
-    type: drink,
-    value: values[drink]
-}))
-}
+        e.preventDefault();
 
-    try {
-    await fetch("https://crm.skch.cz/ajax0/procedure2.php?cmd=saveDrinks", {
-    method: "POST",
-    headers: { "Content-Type": "application/json",
-    'Authorization': AUTH_HEADER
-},
-    credentials: "include",
-    body: JSON.stringify(payload)
-})
+        const payload = {
+            user: select.value,
+            drinks: Object.keys(values).map(drink => ({
+                type: drink,
+                value: values[drink]
+            }))
+        };
 
-    Object.keys(values).forEach(d => values[d] = 0)
-    document.querySelectorAll(".val-display").forEach(s => s.textContent = "0")
+        try {
+            await fetch("https://crm.skch.cz/ajax0/procedure2.php?cmd=saveDrinks", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': AUTH_HEADER
+                },
+                credentials: "include",
+                body: JSON.stringify(payload)
+            });
 
-    refreshStats()
-} catch (err) {
-    localStorage.setItem("savedPayload", payload);
-}
-})
-})
+            Object.keys(values).forEach(d => values[d] = 0);
+            document.querySelectorAll(".val-display").forEach(s => s.textContent = "0");
+
+            await refreshStats();
+        } catch (err) {
+            localStorage.setItem("savedPayload", JSON.stringify(payload)); // FIXED
+        }
+    });
+});
